@@ -1,7 +1,11 @@
-import "./App.css";
+import AppLayout from "./AppLayout";
 
 function App() {
-  return <div>This is  app netflix plus</div>;
+  return (
+    <div>
+      <AppLayout/>
+    </div>
+  );
 }
 
 export default App;
