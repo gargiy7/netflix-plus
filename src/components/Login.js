@@ -1,9 +1,17 @@
 import React, { useState } from "react";
-import Header from "./Header";
-import useInput from "../customHooks/useInput";
+import useInput from "../utils/useInput";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { auth } from "../utils/firebase";
+import { useDispatch } from "react-redux";
+import { addUser } from "../utils/userSlice";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
+  const dispatch = useDispatch();
   const toggleSignInForm = () => {
     setIsSignInForm(!isSignInForm);
   };
@@ -24,7 +32,6 @@ const Login = () => {
     inputBlurHandler: emailBlurHandler,
     reset: resetEmail,
   } = useInput((value) => value.includes("@"));
-
   const {
     value: passwordValue,
     isValid: passwordIsValid,
@@ -35,22 +42,62 @@ const Login = () => {
   } = useInput((value) =>
     /^(?:(?=.*\d)(?=.*\W)(?=.*[a-z])(?=.*[A-Z]).{8,}.*)$/.test(value)
   );
-
+  // -------------------------CHECKING FORM VALIDITY---------------------------------
   let formIsValid = false;
 
-  if (nameIsValid && emailIsValid && passwordIsValid) {
+  if (emailIsValid && passwordIsValid) {
     formIsValid = true;
   }
-
+  //--------------------------HANDLING THE SUBMIT EVENT-----------------------
   const submitHandler = (event) => {
     event.preventDefault();
-
+    //-----------IF FORM IS INVALID THEN TERMINATE THIS FUNCTION--------------
     if (!formIsValid) {
       return;
     }
-
-    console.log("Submitted!");
-    console.log(nameValue, emailValue);
+    //-----------IF FORM IS VALID THEN PROCEED WITH SIGN IN/SIGN UP--------------
+    if (!isSignInForm) {
+      //----------------SIGN UP LOGIC-----------
+      createUserWithEmailAndPassword(auth, emailValue, passwordValue)
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          updateProfile(user, {
+            displayName: nameValue,
+          })
+            .then(() => {
+              // Profile updated!
+              const { uid, email, displayName } = auth.currentUser;
+              dispatch(
+                addUser({ uid: uid, email: email, displayName: displayName })
+              );
+            })
+            .catch((error) => {
+              // An error occurred
+              // ...
+            });
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          // ..
+        });
+    } else {
+      //---------SIGN IN LOGIC---------------
+      signInWithEmailAndPassword(auth, emailValue, passwordValue)
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          // ...
+          console.log("user signed In");
+          console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(error.code);
+        });
+    }
 
     resetName();
     resetEmail();
@@ -58,15 +105,8 @@ const Login = () => {
   };
   return (
     <div>
-      <Header />
-      <div className="absolute">
-        <img
-          alt="background"
-          src="https://assets.nflxext.com/ffe/siteui/vlv3/04bef84d-51f6-401e-9b8e-4a521cbce3c5/null/IN-en-20240903-TRIFECTA-perspective_0d3aac9c-578f-4e3c-8aa8-bbf4a392269b_large.jpg"
-        />
-      </div>
       <form
-        className="bg-zinc-950 text-white absolute p-12 w-2/6 mt-32 mx-auto right-0 left-0 bg-opacity-90"
+        className="bg-zinc-950 text-white absolute p-12 w-2/6 mt-32 mx-auto right-0 left-0 bg-opacity-85"
         onSubmit={submitHandler}
       >
         <h1 className="font-bold text-3xl pb-2 ">
@@ -110,9 +150,13 @@ const Login = () => {
             lower case letter and atleast 8 characters.{" "}
           </p>
         )}
-        <button className="bg-red-700 p-3 my-2 w-full">
-          {isSignInForm ? "Sign In" : "Sign Up"}
-        </button>
+
+        {isSignInForm ? (
+          <button className="bg-red-700 p-3 my-2 w-full">Sign In</button>
+        ) : (
+          <button className="bg-red-700 p-3 my-2 w-full">Sign Up</button>
+        )}
+
         <p className="py-6 cursor-pointer" onClick={toggleSignInForm}>
           {isSignInForm
             ? "New to Netflix? Sign up now."
