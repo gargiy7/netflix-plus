@@ -1,12 +1,38 @@
 import { signOut } from "firebase/auth";
-import React from "react";
+import React, { useEffect } from "react";
 import { auth } from "../utils/firebase";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { onAuthStateChanged } from "firebase/auth";
+import { addUser, removeUser } from "../utils/userSlice";
+import { NETFLIX_LOGO, USER_AVATAR } from "../utils/constants";
 
 const Header = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const user = useSelector((store) => store.user);
+  // *********Get the currently signed-in user***********
+  // navigate to browse if logged in and to home page if logged out
+  // firebase automatically sign you in when you sign up
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in, see docs for a list of available properties
+        // https://firebase.google.com/docs/reference/js/auth.user
+
+        const { uid, email, displayName } = user;
+        dispatch(addUser({ uid: uid, email: email, displayName: displayName }));
+        navigate("/browse");
+      } else {
+        // User is signed out
+        dispatch(removeUser());
+        navigate("/");
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
@@ -19,27 +45,19 @@ const Header = () => {
   };
   return (
     <>
-      <div className="absolute  bg-gradient-to-b w-full  from-black  pl-20  z-10 flex justify-between ">
-        <img
-          className="w-56"
-          alt="logo"
-          src="https://cdn.cookielaw.org/logos/dd6b162f-1a32-456a-9cfe-897231c7763c/4345ea78-053c-46d2-b11e-09adaef973dc/Netflix_Logo_PMS.png"
-        />
+      <div className="absolute h-30 bg-gradient-to-b w-full  from-black  pl-10 pr-10 z-10 flex justify-between ">
+        <img className="w-56 h-24" alt="logo" src={NETFLIX_LOGO} />
         {user && (
           <div className="flex p-2 ">
-            <img
-              className="h-16 w-14 mt-2"
-              alt="user_icon"
-              src="https://wallpapers.com/images/hd/netflix-profile-pictures-1000-x-1000-qo9h82134t9nv0j0.jpg"
-            />
-            <div className="text-xl p-1 text-pretty text-white ">
-              <div className="text-sm">Welcome :</div>
-              <p className="text-sm">{user.displayName || ("ABCD")}</p>
+            <img className="h-16 w-14 mt-2" alt="user_icon" src={USER_AVATAR} />
+            <div className="text-xl p-1 mr-4 text-pretty text-white ">
+              <div className="text-sm">Welcome </div>
+              <p className="text-sm">{user.displayName || "ABCD"}</p>
               <button
                 onClick={handleSignOut}
-                className="text-lg text-pretty text-white cursor-pointer"
+                className="text-sm px-2 mt-1 text-pretty bg-gray-500 text-white cursor-pointer rounded-xl"
               >
-                (Sign Out)
+                Sign Out
               </button>
             </div>
           </div>

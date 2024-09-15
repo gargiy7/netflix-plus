@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import useInput from "../utils/useInput";
+import useInput from "../hooks/useInput";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -89,13 +89,12 @@ const Login = () => {
           // Signed in
           const user = userCredential.user;
           // ...
-          console.log("user signed In");
-          console.log(user);
+          //console.log("user signed In");
+          //console.log(user);
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
-          console.log(error.code);
         });
     }
 
