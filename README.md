@@ -1,5 +1,17 @@
 # Getting Started with Create React App
 
+Phase-I complete.
+What we have done?
+Made a netflix like website,made signUp-signIn functionality with the help of firebase.
+fetched data for rendering movies- beautified that cantainer
+Stored all the data in a central place i.e. Redux store.
+security measures i.e. hiding key in env file
+Deployed the app
+Phase-II
+-movie detail page based on the movie you click on the browse page
+-search funtionality.
+-additional (PLUS) feature. it can be a music app, a ecommerce shopping page , an artificial intelligence paage with beautiful AI
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

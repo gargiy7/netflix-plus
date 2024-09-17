@@ -23,7 +23,7 @@ const Header = () => {
 
         const { uid, email, displayName } = user;
         dispatch(addUser({ uid: uid, email: email, displayName: displayName }));
-        navigate("/browse");
+        navigate("/browse", { replace: true });
       } else {
         // User is signed out
         dispatch(removeUser());
